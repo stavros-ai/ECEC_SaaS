@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SelfAssessPro — Key Practice Writing Studio</title>
+  <style>
+    :root {
+      --bg-primary: #f8f9fb;
+      --bg-secondary: #ffffff;
+      --bg-chat: #f1f3f7;
+      --text-primary: #1a1d27;
+      --text-secondary: #5f6577;
+      --accent: #2563eb;
+      --accent-light: #eff4ff;
+      --accent-hover: #1d4ed8;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --border: #e2e5ea;
+      --border-focus: #2563eb;
+      --radius: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    .topnav {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topnav .logo { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+    .topnav .logo span { color: var(--accent); }
+    .topnav .user-info { font-size: 0.85rem; color: var(--text-secondary); }
+    .topnav .user-info strong { color: var(--text-primary); }
+    .app-layout { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.3rem; }
+    .page-header p { font-size: 0.95rem; color: var(--text-secondary); max-width: 640px; }
+
+    /* Steps */
+    .steps-bar {
+      display: flex; align-items: center; gap: 0; margin-bottom: 1.5rem;
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0.75rem 1.25rem; box-shadow: var(--shadow-sm);
+    }
+    .step-indicator { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; }
+    .step-indicator .dot {
+      width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center;
+      justify-content: center; font-size: 0.7rem; font-weight: 700; border: 2px solid var(--border);
+      color: var(--text-secondary); flex-shrink: 0;
+    }
+    .step-indicator.active .dot { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .step-indicator.done .dot { background: var(--green); border-color: var(--green); color: #fff; }
+    .step-connector { flex: 1; height: 2px; background: var(--border); margin: 0 0.5rem; min-width: 20px; }
+    .step-connector.done { background: var(--green); }
+
+    /* Chat */
+    .chat-container { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .chat-messages { padding: 1.5rem; min-height: 200px; }
+    .message { margin-bottom: 1.25rem; animation: msgIn 0.3s ease; }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .message .sender { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+    .message.ai .sender { color: var(--accent); }
+    .message.user .sender { color: var(--green); }
+    .message .bubble { font-size: 0.95rem; line-height: 1.65; color: var(--text-primary); }
+    .message.ai .bubble { background: var(--bg-chat); padding: 1rem 1.25rem; border-radius: 2px var(--radius) var(--radius) var(--radius); }
+    .message.user .bubble { background: var(--accent-light); padding: 1rem 1.25rem; border-radius: var(--radius) 2px var(--radius) var(--radius); border: 1px solid #dbeafe; }
+
+    /* Choices */
+    .choices { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
+    .choice-btn {
+      text-align: left; background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.9rem; color: var(--text-primary);
+      cursor: pointer; transition: all 0.15s; font-family: inherit; line-height: 1.5;
+    }
+    .choice-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+    .choice-btn.selected { border-color: var(--accent); background: var(--accent-light); font-weight: 500; }
+    .choice-btn.disabled { opacity: 0.5; cursor: default; pointer-events: none; }
+
+    /* Input */
+    .input-area { border-top: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; gap: 0.75rem; align-items: flex-end; background: var(--bg-secondary); }
+    .input-area textarea {
+      flex: 1; font-family: inherit; font-size: 0.95rem; border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.7rem 1rem; resize: none; line-height: 1.5;
+      min-height: 44px; max-height: 140px; outline: none; transition: border-color 0.15s; color: var(--text-primary);
+    }
+    .input-area textarea:focus { border-color: var(--border-focus); }
+    .input-area textarea::placeholder { color: #aab0bf; }
+    .send-btn {
+      background: var(--accent); color: #fff; border: none; border-radius: 8px;
+      padding: 0.65rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      transition: background 0.15s; font-family: inherit; white-space: nowrap;
+    }
+    .send-btn:hover { background: var(--accent-hover); }
+    .send-btn:disabled { background: #c5d1e8; cursor: default; }
+
+    /* Result */
+    .kp-output {
+      background: var(--bg-secondary); border: 1px solid var(--accent);
+      border-radius: var(--radius); margin-top: 0.75rem; overflow: hidden;
+    }
+    .kp-output-header {
+      padding: 0.6rem 1.25rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.05em; background: var(--accent-light); color: var(--accent); border-bottom: 1px solid #dbeafe;
+    }
+    .kp-output-body { padding: 1.25rem; }
+    .kp-text { font-size: 1rem; line-height: 1.7; font-style: italic; color: var(--text-primary); margin-bottom: 0.75rem; }
+    .char-count { font-size: 0.8rem; color: var(--text-secondary); }
+    .char-count strong { color: var(--green); }
+    .element-tag {
+      display: inline-block; padding: 0.2rem 0.65rem; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 600; background: #dbeafe; color: #1e40af;
+    }
+    .kp-meta { display: flex; gap: 1rem; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; }
+
+    /* Action buttons */
+    .action-row { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+    .action-btn {
+      padding: 0.6rem 1.25rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .action-btn.primary { background: var(--accent); color: #fff; border: none; }
+    .action-btn.primary:hover { background: var(--accent-hover); }
+    .action-btn.secondary { background: var(--bg-secondary); color: var(--accent); border: 1px solid var(--accent); }
+    .action-btn.secondary:hover { background: var(--accent-light); }
+    .action-btn.outline { background: none; color: var(--text-secondary); border: 1px solid var(--border); }
+    .action-btn.outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Typing */
+    .typing { display: flex; align-items: center; gap: 4px; padding: 0.5rem 0; }
+    .typing span { width: 7px; height: 7px; background: #b0b8c9; border-radius: 50%; animation: typingDot 1.2s infinite; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+    /* Readiness prompts */
+    .readiness-card {
+      background: var(--bg-chat); border: 1px solid var(--border); border-radius: var(--radius);
+      margin-top: 0.75rem; padding: 1.25rem;
+    }
+    .readiness-card h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent); }
+    .readiness-section { margin-bottom: 0.75rem; }
+    .readiness-section:last-child { margin-bottom: 0; }
+    .readiness-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.25rem; }
+    .readiness-items { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.65; }
+
+    /* Disclaimer */
+    .disclaimer {
+      margin-top: 1.5rem; padding: 0.75rem 1rem; background: var(--amber-light);
+      border-left: 3px solid var(--amber); border-radius: 0 6px 6px 0;
+      font-size: 0.8rem; color: #78590a; line-height: 1.55;
+    }
+
+    .hidden { display: none !important; }
+    .click-hint { font-size: 0.8rem; color: var(--text-secondary); font-style: italic; margin-top: 0.5rem; }
+
+    @media (max-width: 640px) {
+      .app-layout { padding: 1rem; }
+      .page-header h1 { font-size: 1.25rem; }
+      .steps-bar { flex-wrap: wrap; gap: 0.3rem; padding: 0.6rem 0.8rem; }
+      .step-connector { display: none; }
+      .input-area { padding: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="topnav">
+    <div class="logo">Self<span>Assess</span>Pro</div>
+    <div class="user-info"><strong>Sarah M.</strong> &middot; Rosebery Centre</div>
+  </nav>
+
+  <div class="app-layout">
+    <div class="page-header">
+      <h1>✏️ Key Practice Writing Studio</h1>
+      <p>We'll guide you through turning real practice into a clear, concise Key Practice aligned to the NQF. You bring the knowledge — we help shape the writing.</p>
+    </div>
+
+    <div class="steps-bar">
+      <div class="step-indicator active" id="step1-ind"><span class="dot">1</span> Choose element</div>
+      <div class="step-connector" id="conn1"></div>
+      <div class="step-indicator" id="step2-ind"><span class="dot">2</span> Describe practice</div>
+      <div class="step-connector" id="conn2"></div>
+      <div class="step-indicator" id="step3-ind"><span class="dot">3</span> Guided reflection</div>
+      <div class="step-connector" id="conn3"></div>
+      <div class="step-indicator" id="step4-ind"><span class="dot">4</span> Review &amp; save</div>
+    </div>
+
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages">
+        <div class="message ai">
+          <div class="sender">SelfAssessPro</div>
+          <div class="bubble">
+            Let's write a Key Practice together. First — do you already know which NQF element this practice relates to, or would you like help finding the right one?
+          </div>
+        </div>
+      </div>
+      <div class="input-area" id="inputArea">
+        <textarea id="userInput" rows="2" placeholder="Type an element number (e.g. 2.1.1) or describe your practice..."></textarea>
+        <button class="send-btn" id="sendBtn" onclick="handleSend()">Send</button>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Key Practice Writing Support:</strong> Content generated here is intended to support reflective practice and evidence-based writing. Key Practices are drafted based on the information you provide and should be reviewed using professional judgement. Final decisions about how practice is described remain the responsibility of the service.
+    </div>
+  </div>
+
+  <script>
+    let step = 0;
+    const chatEl = document.getElementById('chatMessages');
+    const inputEl = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px'; });
+    inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
+
+    function scroll() { setTimeout(() => { chatEl.scrollTop = chatEl.scrollHeight; window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 50); }
+    function addMsg(type, html) {
+      const s = type === 'ai' ? 'SelfAssessPro' : 'You';
+      const d = document.createElement('div'); d.className = `message ${type}`;
+      d.innerHTML = `<div class="sender">${s}</div><div class="bubble">${html}</div>`;
+      chatEl.appendChild(d); scroll();
+    }
+    function addTyping() { const d = document.createElement('div'); d.className = 'message ai'; d.id = 'typ'; d.innerHTML = `<div class="sender">SelfAssessPro</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`; chatEl.appendChild(d); scroll(); }
+    function rmTyping() { const e = document.getElementById('typ'); if (e) e.remove(); }
+    function disable() { inputEl.disabled = true; sendBtn.disabled = true; }
+    function enable(ph) { inputEl.disabled = false; sendBtn.disabled = false; inputEl.placeholder = ph || 'Type your response...'; inputEl.value = ''; inputEl.style.height = 'auto'; inputEl.focus(); }
+    function hideInput() { document.getElementById('inputArea').classList.add('hidden'); }
+    function showInput() { document.getElementById('inputArea').classList.remove('hidden'); }
+
+    function updateSteps(active) {
+      for (let i = 1; i <= 4; i++) {
+        const ind = document.getElementById(`step${i}-ind`);
+        const conn = document.getElementById(`conn${i}`);
+        ind.classList.remove('active', 'done');
+        if (conn) conn.classList.remove('done');
+        if (i < active) { ind.classList.add('done'); if (conn) conn.classList.add('done'); }
+        else if (i === active) ind.classList.add('active');
+      }
+    }
+
+    function addChoices(choices, cb) {
+      disable(); hideInput();
+      const c = document.createElement('div'); c.className = 'choices';
+      choices.forEach((ch, i) => {
+        const b = document.createElement('button'); b.className = 'choice-btn'; b.textContent = ch;
+        b.onclick = () => {
+          c.querySelectorAll('.choice-btn').forEach(x => { x.classList.add('disabled'); x.classList.remove('selected'); });
+          b.classList.add('selected'); b.classList.remove('disabled');
+          setTimeout(() => { addMsg('user', ch); cb(i, ch); }, 300);
+        };
+        c.appendChild(b);
+      });
+      const last = chatEl.querySelector('.message.ai:last-child .bubble');
+      if (last) last.appendChild(c);
+      scroll();
+    }
+
+    // === FLOW ===
+    function handleSend() {
+      const t = inputEl.value.trim(); if (!t) return;
+
+      if (step === 0) {
+        // Step 1: Element selection
+        addMsg('user', t); disable(); step = 1;
+
+        addTyping();
+        setTimeout(() => {
+          rmTyping();
+          // Check if they typed an element number
+          if (/^\d+\.\d+\.\d+$/.test(t.trim())) {
+            addMsg('ai', `<strong>Element ${t.trim()}</strong> — got it. Now tell me about the practice at your service that relates to this element. What actually happens? Describe it in your own words.`);
+            updateSteps(2);
+            showInput(); enable('Describe what your service actually does for this element...');
+            step = 2;
+          } else {
+            addMsg('ai', 'No worries — let\'s figure out the right element together. Based on what you\'ve described, I\'ll suggest the best fit. First, tell me what actually happens at your service.');
+            updateSteps(2);
+            showInput(); enable('Describe the practice in your own words...');
+            step = 2;
+          }
+        }, 1200);
+
+      } else if (step === 2) {
+        // Step 2: Practice description
+        addMsg('user', t); disable(); step = 3;
+        updateSteps(3);
+
+        addTyping();
+        setTimeout(() => {
+          rmTyping();
+          addMsg('ai', 'Thanks — that gives me a clear picture. A few quick reflection questions to strengthen the Key Practice.');
+
+          setTimeout(() => {
+            addMsg('ai', '<strong>How is this practice embedded in your service?</strong>');
+            addChoices([
+              'It happens consistently across all rooms and age groups',
+              'It\'s part of a specific program or routine',
+              'It\'s led by particular educators but becoming more widespread',
+              'It\'s documented in our policies and procedures'
+            ], handleEmbed);
+          }, 800);
+        }, 1500);
+
+      } else if (step === 5) {
+        // Freeform family/community input
+        addMsg('user', t); disable(); step = 6;
+        addTyping();
+        setTimeout(() => { rmTyping(); updateSteps(4); showResult(); }, 1800);
+      }
+    }
+
+    function handleEmbed(idx, choice) {
+      step = 4;
+      addTyping();
+      setTimeout(() => {
+        rmTyping();
+        addMsg('ai', '<strong>Has critical reflection shaped how you do this?</strong>');
+        addChoices([
+          'Yes — we changed our approach after reflecting on what was and wasn\'t working',
+          'Yes — we discussed research or theory that influenced our practice',
+          'Somewhat — it\'s come up in team meetings but hasn\'t led to major changes',
+          'Not specifically — it\'s just how we\'ve always done it'
+        ], handleReflection);
+      }, 1200);
+    }
+
+    function handleReflection(idx, choice) {
+      step = 5;
+      addTyping();
+      setTimeout(() => {
+        rmTyping();
+        addMsg('ai', '<strong>Have families or the community influenced this practice?</strong>');
+        addChoices([
+          'Yes — families gave us feedback that shaped what we do',
+          'Yes — we drew on community or cultural knowledge',
+          'Indirectly — we consider family needs but haven\'t had specific input',
+          'Not yet — this is an area we could strengthen'
+        ], handleFamily);
+      }, 1200);
+    }
+
+    function handleFamily(idx, choice) {
+      if (idx === 0 || idx === 1) {
+        addMsg('ai', 'Can you give a quick example of that family or community input? Even one sentence is enough.');
+        showInput(); enable('e.g. "Several families mentioned they wanted more outdoor play..."');
+      } else {
+        step = 6; updateSteps(4); showResult();
+      }
+    }
+
+    function showResult() {
+      const kp = "We provide consistent, unhurried mealtimes where educators sit with small groups of children, engaging in genuine conversations about their interests, families, and experiences. These interactions directly inform our weekly programming, with children\u2019s ideas and curiosities becoming the foundation for intentional learning experiences across the service.";
+
+      addMsg('ai', `Here's your draft Key Practice. It's based on everything you've shared.
+
+<div class="kp-output">
+  <div class="kp-output-header">Draft Key Practice</div>
+  <div class="kp-output-body">
+    <div class="kp-meta">
+      <span class="element-tag">Element 1.1.2</span>
+      <span style="font-size: 0.85rem; color: var(--text-secondary);">Child-directed learning</span>
+    </div>
+    <div class="kp-text">${kp}</div>
+    <div class="char-count"><strong>${kp.length} / 480 characters</strong></div>
+  </div>
+</div>
+
+<div class="action-row">
+  <button class="action-btn primary" onclick="handleSave()">Save Key Practice</button>
+  <button class="action-btn secondary" onclick="handleRegenerate()">Refine further</button>
+  <button class="action-btn outline" onclick="handleReadiness()">View Assessment Readiness Prompts</button>
+</div>`);
+    }
+
+    function handleSave() {
+      hideInput();
+      addMsg('ai', `<div style="background: var(--green-light); border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem 1.25rem;">
+        <strong style="color: var(--green);">Before saving, please confirm:</strong><br>
+        <span style="font-size: 0.9rem; color: var(--text-secondary);">"I confirm this Key Practice is reflective of real practice at our service."</span>
+      </div>
+      <div class="action-row" style="margin-top: 0.75rem;">
+        <button class="action-btn primary" onclick="confirmSave()">Yes — save to library</button>
+        <button class="action-btn outline" onclick="handleRegenerate()">Go back and edit</button>
+      </div>`);
+    }
+
+    function confirmSave() {
+      addMsg('ai', `<div style="background: var(--green-light); border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem 1.25rem;">
+        <strong style="color: var(--green);">Saved to your Key Practice Library</strong><br>
+        <span style="font-size: 0.9rem; color: var(--text-secondary);">Element 1.1.2 · Created by Sarah M. · 24 March 2026<br>You can view, edit, or review assessment readiness prompts from your library any time.</span>
+      </div>`);
+    }
+
+    function handleRegenerate() {
+      showInput();
+      enable('Add more detail, adjust the focus, or give specific instructions...');
+      addMsg('ai', 'What would you like to change? You can add more detail, shift the focus, or give me specific instructions about tone or emphasis.');
+    }
+
+    function handleReadiness() {
+      addMsg('ai', `These prompts help you prepare for what an assessor might explore around this Key Practice.
+
+<div class="readiness-card">
+  <h4>Assessment Readiness Prompts — Element 1.1.2</h4>
+
+  <div class="readiness-section">
+    <div class="readiness-label">Assessors may discuss</div>
+    <div class="readiness-items">
+      → How do educators use mealtime conversations to identify children's interests?<br>
+      → Can you describe how a child's idea became a learning experience?<br>
+      → How does the team share observations from mealtimes to inform programming?
+    </div>
+  </div>
+
+  <div class="readiness-section">
+    <div class="readiness-label">Assessors may sight</div>
+    <div class="readiness-items">
+      → Weekly programming documents showing links to children's interests<br>
+      → Observation notes or learning stories from mealtime interactions<br>
+      → Evidence of how family input has been incorporated into programs
+    </div>
+  </div>
+
+  <div class="readiness-section">
+    <div class="readiness-label">Assessors may observe</div>
+    <div class="readiness-items">
+      → Educators sitting with children during meals, engaging in genuine conversation<br>
+      → Unhurried mealtime routines that allow for interaction<br>
+      → Children's interests visible in the current room environment and program
+    </div>
+  </div>
+</div>
+
+<p class="click-hint" style="margin-top: 0.75rem;">These are guidance prompts only — they do not generate evidence. They support preparation and reflective discussion.</p>`);
+    }
+
+    inputEl.focus();
+  </script>
+</body>
+</html>
