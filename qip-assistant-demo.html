@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SelfAssessPro — Quality Improvement Planning Assistant</title>
+  <style>
+    :root {
+      --bg-primary: #f8f9fb;
+      --bg-secondary: #ffffff;
+      --bg-chat: #f1f3f7;
+      --text-primary: #1a1d27;
+      --text-secondary: #5f6577;
+      --accent: #2563eb;
+      --accent-light: #eff4ff;
+      --accent-hover: #1d4ed8;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --coral: #dc2626;
+      --border: #e2e5ea;
+      --border-focus: #2563eb;
+      --radius: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-primary); color: var(--text-primary); line-height: 1.6; min-height: 100vh;
+    }
+    .topnav {
+      background: var(--bg-secondary); border-bottom: 1px solid var(--border);
+      padding: 0.75rem 2rem; display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .topnav .logo { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+    .topnav .logo span { color: var(--accent); }
+    .topnav .user-info { font-size: 0.85rem; color: var(--text-secondary); }
+    .topnav .user-info strong { color: var(--text-primary); }
+    .app-layout { max-width: 860px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.3rem; }
+    .page-header p { font-size: 0.95rem; color: var(--text-secondary); max-width: 640px; }
+
+    .steps-bar {
+      display: flex; align-items: center; gap: 0; margin-bottom: 1.5rem;
+      background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 0.75rem 1.25rem; box-shadow: var(--shadow-sm);
+    }
+    .step-indicator { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; }
+    .step-indicator .dot {
+      width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center;
+      justify-content: center; font-size: 0.7rem; font-weight: 700; border: 2px solid var(--border);
+      color: var(--text-secondary); flex-shrink: 0;
+    }
+    .step-indicator.active .dot { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .step-indicator.done .dot { background: var(--green); border-color: var(--green); color: #fff; }
+    .step-connector { flex: 1; height: 2px; background: var(--border); margin: 0 0.5rem; min-width: 20px; }
+    .step-connector.done { background: var(--green); }
+
+    .chat-container { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .chat-messages { padding: 1.5rem; min-height: 200px; }
+    .message { margin-bottom: 1.25rem; animation: msgIn 0.3s ease; }
+    @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .message .sender { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.3rem; }
+    .message.ai .sender { color: var(--accent); }
+    .message.user .sender { color: var(--green); }
+    .message .bubble { font-size: 0.95rem; line-height: 1.65; color: var(--text-primary); }
+    .message.ai .bubble { background: var(--bg-chat); padding: 1rem 1.25rem; border-radius: 2px var(--radius) var(--radius) var(--radius); }
+    .message.user .bubble { background: var(--accent-light); padding: 1rem 1.25rem; border-radius: var(--radius) 2px var(--radius) var(--radius); border: 1px solid #dbeafe; }
+
+    .choices { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.75rem; }
+    .choice-btn {
+      text-align: left; background: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.9rem; color: var(--text-primary);
+      cursor: pointer; transition: all 0.15s; font-family: inherit; line-height: 1.5;
+    }
+    .choice-btn:hover { border-color: var(--accent); background: var(--accent-light); }
+    .choice-btn.selected { border-color: var(--accent); background: var(--accent-light); font-weight: 500; }
+    .choice-btn.disabled { opacity: 0.5; cursor: default; pointer-events: none; }
+
+    .input-area { border-top: 1px solid var(--border); padding: 1rem 1.5rem; display: flex; gap: 0.75rem; align-items: flex-end; background: var(--bg-secondary); }
+    .input-area textarea {
+      flex: 1; font-family: inherit; font-size: 0.95rem; border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.7rem 1rem; resize: none; line-height: 1.5;
+      min-height: 44px; max-height: 140px; outline: none; color: var(--text-primary);
+    }
+    .input-area textarea:focus { border-color: var(--border-focus); }
+    .input-area textarea::placeholder { color: #aab0bf; }
+    .send-btn {
+      background: var(--accent); color: #fff; border: none; border-radius: 8px;
+      padding: 0.65rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+    .send-btn:hover { background: var(--accent-hover); }
+    .send-btn:disabled { background: #c5d1e8; cursor: default; }
+
+    .typing { display: flex; align-items: center; gap: 4px; padding: 0.5rem 0; }
+    .typing span { width: 7px; height: 7px; background: #b0b8c9; border-radius: 50%; animation: typingDot 1.2s infinite; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-4px); opacity: 1; } }
+
+    /* QIP Result */
+    .qip-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: var(--radius); margin-top: 0.75rem; overflow: hidden; }
+    .qip-header { padding: 0.6rem 1.25rem; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+    .qip-body { padding: 1.25rem; }
+    .qip-row { margin-bottom: 1rem; }
+    .qip-row:last-child { margin-bottom: 0; }
+    .qip-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-bottom: 0.2rem; }
+    .qip-value { font-size: 0.95rem; line-height: 1.65; }
+    .qip-steps { margin: 0; padding: 0; list-style: none; }
+    .qip-steps li { padding: 0.3rem 0; font-size: 0.9rem; color: var(--text-secondary); }
+    .qip-steps li::before { content: "→ "; color: var(--accent); font-weight: 600; }
+    .priority-tag {
+      display: inline-block; padding: 0.15rem 0.6rem; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+    }
+    .priority-high { background: #fef2f2; color: var(--coral); }
+    .priority-medium { background: var(--amber-light); color: var(--amber); }
+    .element-tag { display: inline-block; padding: 0.2rem 0.65rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: #dbeafe; color: #1e40af; }
+    .qip-meta { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.75rem; }
+
+    .action-row { display: flex; gap: 0.75rem; margin-top: 1rem; flex-wrap: wrap; }
+    .action-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .action-btn.primary { background: var(--accent); color: #fff; border: none; }
+    .action-btn.primary:hover { background: var(--accent-hover); }
+    .action-btn.secondary { background: var(--bg-secondary); color: var(--accent); border: 1px solid var(--accent); }
+    .action-btn.secondary:hover { background: var(--accent-light); }
+
+    .disclaimer {
+      margin-top: 1.5rem; padding: 0.75rem 1rem; background: var(--amber-light);
+      border-left: 3px solid var(--amber); border-radius: 0 6px 6px 0;
+      font-size: 0.8rem; color: #78590a; line-height: 1.55;
+    }
+    .hidden { display: none !important; }
+
+    @media (max-width: 640px) {
+      .app-layout { padding: 1rem; }
+      .page-header h1 { font-size: 1.25rem; }
+      .steps-bar { flex-wrap: wrap; gap: 0.3rem; padding: 0.6rem 0.8rem; }
+      .step-connector { display: none; }
+      .input-area { padding: 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="topnav">
+    <div class="logo">Self<span>Assess</span>Pro</div>
+    <div class="user-info"><strong>Sarah M.</strong> &middot; Rosebery Centre</div>
+  </nav>
+
+  <div class="app-layout">
+    <div class="page-header">
+      <h1>🎯 Quality Improvement Planning Assistant</h1>
+      <p>Describe an issue or area for improvement. We'll help you build a clear goal, action steps, and success measures — aligned to the NQF.</p>
+    </div>
+
+    <div class="steps-bar">
+      <div class="step-indicator active" id="step1-ind"><span class="dot">1</span> Describe issue</div>
+      <div class="step-connector" id="conn1"></div>
+      <div class="step-indicator" id="step2-ind"><span class="dot">2</span> Guided context</div>
+      <div class="step-connector" id="conn2"></div>
+      <div class="step-indicator" id="step3-ind"><span class="dot">3</span> QIP plan</div>
+      <div class="step-connector" id="conn3"></div>
+      <div class="step-indicator" id="step4-ind"><span class="dot">4</span> Review &amp; save</div>
+    </div>
+
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages">
+        <div class="message ai">
+          <div class="sender">SelfAssessPro</div>
+          <div class="bubble">
+            What's an area your service would like to improve? Describe the issue or challenge — it can be something you've noticed, something from a team discussion, or feedback you've received.
+          </div>
+        </div>
+      </div>
+      <div class="input-area" id="inputArea">
+        <textarea id="userInput" rows="2" placeholder="Describe an issue or improvement area..."></textarea>
+        <button class="send-btn" id="sendBtn" onclick="handleSend()">Send</button>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <strong>Quality Improvement Planning Support:</strong> Goals, next steps, and improvement considerations generated here are intended to support reflective self-assessment. All suggestions should be reviewed and adapted using professional judgement to ensure they accurately reflect your service context.
+    </div>
+  </div>
+
+  <script>
+    let step = 0;
+    const chatEl = document.getElementById('chatMessages');
+    const inputEl = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    inputEl.addEventListener('input', () => { inputEl.style.height = 'auto'; inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px'; });
+    inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } });
+
+    function scroll() { setTimeout(() => { chatEl.scrollTop = chatEl.scrollHeight; window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }); }, 50); }
+    function addMsg(type, html) {
+      const s = type === 'ai' ? 'SelfAssessPro' : 'You';
+      const d = document.createElement('div'); d.className = `message ${type}`;
+      d.innerHTML = `<div class="sender">${s}</div><div class="bubble">${html}</div>`;
+      chatEl.appendChild(d); scroll();
+    }
+    function addTyping() { const d = document.createElement('div'); d.className = 'message ai'; d.id = 'typ'; d.innerHTML = `<div class="sender">SelfAssessPro</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`; chatEl.appendChild(d); scroll(); }
+    function rmTyping() { const e = document.getElementById('typ'); if (e) e.remove(); }
+    function disable() { inputEl.disabled = true; sendBtn.disabled = true; }
+    function enable(ph) { inputEl.disabled = false; sendBtn.disabled = false; inputEl.placeholder = ph || 'Type your response...'; inputEl.value = ''; inputEl.style.height = 'auto'; inputEl.focus(); }
+    function hideInput() { document.getElementById('inputArea').classList.add('hidden'); }
+    function showInput() { document.getElementById('inputArea').classList.remove('hidden'); }
+
+    function updateSteps(active) {
+      for (let i = 1; i <= 4; i++) {
+        const ind = document.getElementById(`step${i}-ind`);
+        const conn = document.getElementById(`conn${i}`);
+        ind.classList.remove('active', 'done');
+        if (conn) conn.classList.remove('done');
+        if (i < active) { ind.classList.add('done'); if (conn) conn.classList.add('done'); }
+        else if (i === active) ind.classList.add('active');
+      }
+    }
+
+    function addChoices(choices, cb) {
+      disable(); hideInput();
+      const c = document.createElement('div'); c.className = 'choices';
+      choices.forEach((ch, i) => {
+        const b = document.createElement('button'); b.className = 'choice-btn'; b.textContent = ch;
+        b.onclick = () => {
+          c.querySelectorAll('.choice-btn').forEach(x => { x.classList.add('disabled'); x.classList.remove('selected'); });
+          b.classList.add('selected'); b.classList.remove('disabled');
+          setTimeout(() => { addMsg('user', ch); cb(i, ch); }, 300);
+        };
+        c.appendChild(b);
+      });
+      const last = chatEl.querySelector('.message.ai:last-child .bubble');
+      if (last) last.appendChild(c);
+      scroll();
+    }
+
+    // === FLOW ===
+    function handleSend() {
+      const t = inputEl.value.trim(); if (!t) return;
+
+      if (step === 0) {
+        addMsg('user', t); disable(); step = 1;
+        updateSteps(2);
+
+        addTyping();
+        setTimeout(() => {
+          rmTyping();
+          addMsg('ai', 'Thanks for describing that. Let me ask a few questions so I can help you build a strong QIP goal.');
+
+          setTimeout(() => {
+            addMsg('ai', '<strong>How did you identify this issue?</strong>');
+            addChoices([
+              'Through our own observations and self-assessment',
+              'Feedback from families or the community',
+              'A previous Assessment & Rating visit',
+              'Team discussion or professional development',
+              'Reviewing data (e.g. attendance, incident reports, surveys)'
+            ], handleIdentify);
+          }, 800);
+        }, 1500);
+
+      } else if (step === 5) {
+        addMsg('user', t); disable(); step = 6;
+        addTyping();
+        setTimeout(() => { rmTyping(); updateSteps(3); showQIPResult(); }, 1800);
+      }
+    }
+
+    function handleIdentify(idx, choice) {
+      step = 2;
+      addTyping();
+      setTimeout(() => {
+        rmTyping();
+        addMsg('ai', '<strong>How would you rate the urgency of this improvement?</strong>');
+        addChoices([
+          'Critical — it affects children\u2019s safety, wellbeing, or rights',
+          'High — it\u2019s a significant gap that needs addressing soon',
+          'Medium — important but can be worked on over the next few months',
+          'Low — it\u2019s an enhancement, not a gap'
+        ], handleUrgency);
+      }, 1200);
+    }
+
+    function handleUrgency(idx, choice) {
+      step = 3;
+      addTyping();
+      setTimeout(() => {
+        rmTyping();
+        addMsg('ai', '<strong>Have you already tried anything to address this?</strong>');
+        addChoices([
+          'Yes — we\u2019ve made some changes but they haven\u2019t been enough',
+          'We\u2019ve discussed it but haven\u2019t taken action yet',
+          'No — this is a newly identified issue',
+          'We\u2019re not sure where to start'
+        ], handlePriorAction);
+      }, 1200);
+    }
+
+    function handlePriorAction(idx, choice) {
+      step = 4;
+      addTyping();
+      setTimeout(() => {
+        rmTyping();
+        addMsg('ai', '<strong>Do you know which Quality Area this relates to?</strong>');
+        addChoices([
+          'QA1 — Educational program and practice',
+          'QA2 — Children\u2019s health and safety',
+          'QA3 — Physical environment',
+          'QA4 — Staffing arrangements',
+          'QA5 — Relationships with children',
+          'QA6 — Collaborative partnerships with families and communities',
+          'QA7 — Governance and leadership',
+          'I\u2019m not sure — suggest one for me'
+        ], handleQA);
+      }, 1200);
+    }
+
+    function handleQA(idx, choice) {
+      step = 5;
+      addTyping();
+      setTimeout(() => {
+        rmTyping();
+        addMsg('ai', 'Last question — is there anything else you\u2019d like to add? Any context, family feedback, or ideas about what the solution might look like? If not, just type "no" and I\u2019ll generate your QIP plan.');
+        showInput();
+        enable('Any additional context, or type "no" to continue...');
+      }, 1200);
+    }
+
+    function showQIPResult() {
+      addMsg('ai', `Based on everything you've shared, here's a suggested QIP plan.
+
+<div class="qip-card">
+  <div class="qip-header" style="background: var(--accent-light); color: var(--accent);">Quality Improvement Plan</div>
+  <div class="qip-body">
+    <div class="qip-meta">
+      <span class="element-tag">QA6 — Element 6.1.2</span>
+      <span class="priority-tag priority-high">High Priority</span>
+    </div>
+
+    <div class="qip-row">
+      <div class="qip-label">Issue Identified</div>
+      <div class="qip-value">Family engagement in the educational program is inconsistent. While educators have informal conversations at pickup, there is no structured process for families to contribute to programming decisions or share their child\u2019s interests and learning at home.</div>
+    </div>
+
+    <div class="qip-row">
+      <div class="qip-label">Goal</div>
+      <div class="qip-value" style="font-weight: 500;">Develop and embed a consistent, accessible process for families to actively contribute to the educational program across all rooms, ensuring their perspectives and knowledge meaningfully inform children\u2019s learning experiences.</div>
+    </div>
+
+    <div class="qip-row">
+      <div class="qip-label">Suggested Next Steps</div>
+      <ul class="qip-steps">
+        <li>Audit current family communication methods across all rooms to identify gaps</li>
+        <li>Research and trial 2\u20133 family input methods (e.g. digital surveys, conversation boards, take-home reflection sheets)</li>
+        <li>Develop a family input template that educators can use consistently</li>
+        <li>Schedule a team meeting to discuss how family input will be documented and reflected in programming</li>
+        <li>Pilot the new process in one room for 4 weeks, then gather educator and family feedback</li>
+        <li>Review and refine based on pilot feedback before rolling out across all rooms</li>
+        <li>Update the Family Communication Policy to reflect the new process</li>
+      </ul>
+    </div>
+
+    <div class="qip-row">
+      <div class="qip-label">Success Measure</div>
+      <div class="qip-value">All rooms have a documented, active process for gathering family input, with evidence of family perspectives appearing in programming documentation at least fortnightly.</div>
+    </div>
+
+    <div class="qip-row" style="display: flex; gap: 2rem; flex-wrap: wrap;">
+      <div>
+        <div class="qip-label">Timeframe</div>
+        <div class="qip-value">3 months (complete by June 2026)</div>
+      </div>
+      <div>
+        <div class="qip-label">Progress Notes</div>
+        <div class="qip-value" style="color: var(--text-secondary); font-style: italic;">No progress notes yet — you can add these over time as work begins.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="action-row">
+  <button class="action-btn primary" onclick="handleSave()">Save QIP Goal</button>
+  <button class="action-btn secondary" onclick="handleRefine()">Refine further</button>
+</div>`);
+
+      updateSteps(4);
+    }
+
+    function handleSave() {
+      hideInput();
+      addMsg('ai', `<div style="background: var(--green-light); border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem 1.25rem;">
+        <strong style="color: var(--green);">Before saving, please confirm:</strong><br>
+        <span style="font-size: 0.9rem; color: var(--text-secondary);">"I confirm this reflects our service context and professional judgement."</span>
+      </div>
+      <div class="action-row" style="margin-top: 0.75rem;">
+        <button class="action-btn primary" onclick="confirmSave()">Yes — save to library</button>
+        <button class="action-btn secondary" onclick="handleRefine()">Go back and edit</button>
+      </div>`);
+    }
+
+    function confirmSave() {
+      addMsg('ai', `<div style="background: var(--green-light); border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem 1.25rem;">
+        <strong style="color: var(--green);">Saved to your QIP Library</strong><br>
+        <span style="font-size: 0.9rem; color: var(--text-secondary);">QA6 · Element 6.1.2 · High Priority · Created by Sarah M. · 24 March 2026<br>You can update progress notes, edit next steps, or adjust the timeframe from your library any time.</span>
+      </div>`);
+    }
+
+    function handleRefine() {
+      showInput();
+      enable('Tell me what to adjust — goal wording, next steps, priority, timeframe...');
+      addMsg('ai', 'What would you like to change? I can adjust the goal wording, add or remove next steps, change the priority or timeframe, or refine any section.');
+    }
+
+    inputEl.focus();
+  </script>
+</body>
+</html>
