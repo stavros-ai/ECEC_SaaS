@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SelfAssessPro — NQF Mapping Studio</title>
+  <style>
+    :root {
+      --bg-primary: #f8f9fb;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --bg-chat: #f1f3f7;
+      --text-primary: #1a1d27;
+      --text-secondary: #5f6577;
+      --accent: #2563eb;
+      --accent-light: #eff4ff;
+      --accent-hover: #1d4ed8;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --teal: #0d9488;
+      --teal-light: #f0fdfa;
+      --border: #e2e5ea;
+      --border-focus: #2563eb;
+      --radius: 10px;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ---- TOP NAV ---- */
+    .topnav {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .topnav .logo {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .topnav .logo span { color: var(--accent); }
+    .topnav .user-info {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .topnav .user-info strong { color: var(--text-primary); }
+
+    /* ---- LAYOUT ---- */
+    .app-layout {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ---- PAGE HEADER ---- */
+    .page-header {
+      margin-bottom: 2rem;
+    }
+    .page-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.3rem;
+    }
+    .page-header h1 .icon { margin-right: 0.4rem; }
+    .page-header p {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      max-width: 600px;
+    }
+
+    /* ---- CHAT CONTAINER ---- */
+    .chat-container {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+    }
+    .chat-messages {
+      padding: 1.5rem;
+      min-height: 200px;
+    }
+
+    /* ---- MESSAGES ---- */
+    .message {
+      margin-bottom: 1.25rem;
+      animation: msgIn 0.3s ease;
+    }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .message .sender {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.3rem;
+    }
+    .message.ai .sender { color: var(--accent); }
+    .message.user .sender { color: var(--green); }
+
+    .message .bubble {
+      font-size: 0.95rem;
+      line-height: 1.65;
+      color: var(--text-primary);
+    }
+    .message.ai .bubble {
+      background: var(--bg-chat);
+      padding: 1rem 1.25rem;
+      border-radius: 2px var(--radius) var(--radius) var(--radius);
+    }
+    .message.user .bubble {
+      background: var(--accent-light);
+      padding: 1rem 1.25rem;
+      border-radius: var(--radius) 2px var(--radius) var(--radius);
+      border: 1px solid #dbeafe;
+    }
+
+    /* ---- MULTIPLE CHOICE ---- */
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .choice-btn {
+      text-align: left;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+    .choice-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+    .choice-btn.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      font-weight: 500;
+    }
+    .choice-btn.disabled {
+      opacity: 0.5;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* ---- TEXT INPUT AREA ---- */
+    .input-area {
+      border-top: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-end;
+      background: var(--bg-secondary);
+    }
+    .input-area textarea {
+      flex: 1;
+      font-family: inherit;
+      font-size: 0.95rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 1rem;
+      resize: none;
+      line-height: 1.5;
+      min-height: 44px;
+      max-height: 120px;
+      outline: none;
+      transition: border-color 0.15s;
+      color: var(--text-primary);
+    }
+    .input-area textarea:focus {
+      border-color: var(--border-focus);
+    }
+    .input-area textarea::placeholder {
+      color: #aab0bf;
+    }
+    .send-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+    .send-btn:hover { background: var(--accent-hover); }
+    .send-btn:disabled {
+      background: #c5d1e8;
+      cursor: default;
+    }
+
+    /* ---- RESULT CARD ---- */
+    .result-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-top: 0.75rem;
+      overflow: hidden;
+    }
+    .result-header {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border);
+    }
+    .result-body {
+      padding: 1.25rem;
+    }
+    .result-row {
+      margin-bottom: 1rem;
+    }
+    .result-row:last-child { margin-bottom: 0; }
+    .result-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      margin-bottom: 0.2rem;
+    }
+    .result-value {
+      font-size: 0.95rem;
+    }
+    .qa-tag {
+      display: inline-block;
+      padding: 0.2rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-right: 0.4rem;
+      margin-bottom: 0.3rem;
+    }
+    .qa-tag.qa1 { background: #dbeafe; color: #1e40af; }
+    .qa-tag.qa3 { background: #fef3c7; color: #92400e; }
+    .qa-tag.qa6 { background: #f0fdf4; color: #166534; }
+
+    /* ---- ACTION BUTTONS ---- */
+    .action-row {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+    .action-btn {
+      padding: 0.6rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .action-btn.primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+    }
+    .action-btn.primary:hover { background: var(--accent-hover); }
+    .action-btn.secondary {
+      background: var(--bg-secondary);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+    .action-btn.secondary:hover { background: var(--accent-light); }
+
+    /* ---- TYPING INDICATOR ---- */
+    .typing {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0.5rem 0;
+    }
+    .typing span {
+      width: 7px;
+      height: 7px;
+      background: #b0b8c9;
+      border-radius: 50%;
+      animation: typingDot 1.2s infinite;
+    }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+      30% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    /* ---- DISCLAIMER ---- */
+    .disclaimer {
+      margin-top: 1.5rem;
+      padding: 0.75rem 1rem;
+      background: var(--amber-light);
+      border-left: 3px solid var(--amber);
+      border-radius: 0 6px 6px 0;
+      font-size: 0.8rem;
+      color: #78590a;
+      line-height: 1.55;
+    }
+
+    /* ---- STEP INDICATOR ---- */
+    .steps-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 1.5rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1.25rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+    .step-indicator .dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      border: 2px solid var(--border);
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .step-indicator.active .dot {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .step-indicator.done .dot {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+    .step-connector {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      margin: 0 0.5rem;
+      min-width: 20px;
+    }
+    .step-connector.done { background: var(--green); }
+
+    /* ---- HIDDEN ---- */
+    .hidden { display: none !important; }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 640px) {
+      .app-layout { padding: 1rem; }
+      .page-header h1 { font-size: 1.25rem; }
+      .steps-bar { flex-wrap: wrap; gap: 0.3rem; padding: 0.6rem 0.8rem; }
+      .step-connector { display: none; }
+      .input-area { padding: 0.75rem; }
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sr-only">
+    SelfAssessPro NQF Mapping Studio demo. A guided conversational interface that walks educators through describing their practice, then maps it to the National Quality Framework.
+  </div>
+
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <div class="logo">Self<span>Assess</span>Pro</div>
+    <div class="user-info"><strong>Sarah M.</strong> &middot; Rosebery Centre</div>
+  </nav>
+
+  <div class="app-layout">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <h1><span class="icon">🧭</span> NQF Mapping Studio</h1>
+      <p>Describe something your service does. We'll guide you through connecting it to the National Quality Framework.</p>
+    </div>
+
+    <!-- STEP INDICATOR -->
+    <div class="steps-bar">
+      <div class="step-indicator active" id="step1-ind">
+        <span class="dot">1</span> Describe practice
+      </div>
+      <div class="step-connector" id="conn1"></div>
+      <div class="step-indicator" id="step2-ind">
+        <span class="dot">2</span> Guided reflection
+      </div>
+      <div class="step-connector" id="conn2"></div>
+      <div class="step-indicator" id="step3-ind">
+        <span class="dot">3</span> NQF mapping
+      </div>
+      <div class="step-connector" id="conn3"></div>
+      <div class="step-indicator" id="step4-ind">
+        <span class="dot">4</span> Save or use
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages">
+
+        <!-- INITIAL AI MESSAGE -->
+        <div class="message ai">
+          <div class="sender">SelfAssessPro</div>
+          <div class="bubble">
+            Tell me about a practice at your service that you'd like to map to the NQF. Describe what happens — in your own words, as much or as little detail as you like.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- INPUT -->
+      <div class="input-area" id="inputArea">
+        <textarea id="userInput" rows="2" placeholder="Describe a practice at your service..."></textarea>
+        <button class="send-btn" id="sendBtn" onclick="handleSend()">Send</button>
+      </div>
+    </div>
+
+    <!-- DISCLAIMER -->
+    <div class="disclaimer">
+      <strong>NQF Mapping Support:</strong> Suggested Quality Areas and Elements are intended to support reflective thinking and professional discussion. Suggestions are indicative only and should be reviewed using professional judgement. Final alignment decisions remain the responsibility of the service.
+    </div>
+
+  </div>
+
+  <script>
+    // ===== DEMO STATE =====
+    let currentStep = 0;
+    const chatEl = document.getElementById('chatMessages');
+    const inputEl = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // Auto-resize textarea
+    inputEl.addEventListener('input', () => {
+      inputEl.style.height = 'auto';
+      inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + 'px';
+    });
+
+    // Enter to send (shift+enter for newline)
+    inputEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+
+    function scrollToBottom() {
+      setTimeout(() => {
+        chatEl.scrollTop = chatEl.scrollHeight;
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }, 50);
+    }
+
+    function addMessage(type, html) {
+      const sender = type === 'ai' ? 'SelfAssessPro' : 'You';
+      const div = document.createElement('div');
+      div.className = `message ${type}`;
+      div.innerHTML = `<div class="sender">${sender}</div><div class="bubble">${html}</div>`;
+      chatEl.appendChild(div);
+      scrollToBottom();
+    }
+
+    function addTyping() {
+      const div = document.createElement('div');
+      div.className = 'message ai';
+      div.id = 'typingMsg';
+      div.innerHTML = `<div class="sender">SelfAssessPro</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+      chatEl.appendChild(div);
+      scrollToBottom();
+    }
+
+    function removeTyping() {
+      const el = document.getElementById('typingMsg');
+      if (el) el.remove();
+    }
+
+    function disableInput() {
+      inputEl.disabled = true;
+      sendBtn.disabled = true;
+    }
+
+    function enableInput(placeholder) {
+      inputEl.disabled = false;
+      sendBtn.disabled = false;
+      inputEl.placeholder = placeholder || 'Type your response...';
+      inputEl.value = '';
+      inputEl.style.height = 'auto';
+      inputEl.focus();
+    }
+
+    function hideInput() {
+      document.getElementById('inputArea').classList.add('hidden');
+    }
+
+    function showInput() {
+      document.getElementById('inputArea').classList.remove('hidden');
+    }
+
+    function updateSteps(completedUpTo, activeStep) {
+      for (let i = 1; i <= 4; i++) {
+        const ind = document.getElementById(`step${i}-ind`);
+        const conn = document.getElementById(`conn${i}`);
+        ind.classList.remove('active', 'done');
+        if (conn) conn.classList.remove('done');
+
+        if (i < activeStep) {
+          ind.classList.add('done');
+          if (conn) conn.classList.add('done');
+        } else if (i === activeStep) {
+          ind.classList.add('active');
+        }
+      }
+    }
+
+    function addChoices(choices, callback) {
+      disableInput();
+      hideInput();
+
+      const container = document.createElement('div');
+      container.className = 'choices';
+      container.id = 'currentChoices';
+
+      choices.forEach((choice, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = choice;
+        btn.onclick = () => {
+          // Mark selected, disable others
+          container.querySelectorAll('.choice-btn').forEach(b => {
+            b.classList.add('disabled');
+            b.classList.remove('selected');
+          });
+          btn.classList.add('selected');
+          btn.classList.remove('disabled');
+
+          // Show as user message
+          setTimeout(() => {
+            addMessage('user', choice);
+            callback(idx, choice);
+          }, 300);
+        };
+        container.appendChild(btn);
+      });
+
+      // Attach choices to last AI bubble
+      const lastAiBubble = chatEl.querySelector('.message.ai:last-child .bubble');
+      if (lastAiBubble) {
+        lastAiBubble.appendChild(container);
+      }
+      scrollToBottom();
+    }
+
+    // ===== DEMO FLOW =====
+
+    function handleSend() {
+      const text = inputEl.value.trim();
+      if (!text) return;
+
+      if (currentStep === 0) {
+        // Step 1: User describes practice
+        addMessage('user', text);
+        disableInput();
+        currentStep = 1;
+        updateSteps(1, 2);
+
+        // AI response with first guided question
+        addTyping();
+        setTimeout(() => {
+          removeTyping();
+          addMessage('ai', 'Thanks for sharing that. I\'d like to understand a bit more about this practice before we map it. Let me ask a few quick questions.');
+
+          setTimeout(() => {
+            addMessage('ai', '<strong>What best describes this practice?</strong>');
+            addChoices([
+              'Something we do every day as part of our routine',
+              'A planned learning experience or project',
+              'A response to something we observed in the children',
+              'A change we made based on reflection or feedback'
+            ], handleQ1);
+          }, 800);
+        }, 1500);
+
+      } else if (currentStep === 4) {
+        // Freeform follow-up about family/community
+        addMessage('user', text);
+        disableInput();
+        currentStep = 5;
+
+        addTyping();
+        setTimeout(() => {
+          removeTyping();
+          updateSteps(3, 3);
+          showMappingResult();
+        }, 1800);
+      }
+    }
+
+    function handleQ1(idx, choice) {
+      currentStep = 2;
+
+      addTyping();
+      setTimeout(() => {
+        removeTyping();
+        addMessage('ai', '<strong>How long has this practice been part of your service?</strong>');
+        addChoices([
+          'It\'s new — we started recently',
+          'A few months — still evolving',
+          'It\'s well established — been doing this for a while',
+          'It\'s always been part of how we operate'
+        ], handleQ2);
+      }, 1200);
+    }
+
+    function handleQ2(idx, choice) {
+      currentStep = 3;
+
+      addTyping();
+      setTimeout(() => {
+        removeTyping();
+        addMessage('ai', '<strong>Has this practice been shaped by any of the following?</strong> Pick the one that fits best.');
+        addChoices([
+          'A team discussion, meeting, or professional development session',
+          'Feedback or input from families',
+          'Something I read, researched, or learned from a mentor',
+          'Children\'s interests or observed needs',
+          'Not sure — it just evolved naturally'
+        ], handleQ3);
+      }, 1200);
+    }
+
+    function handleQ3(idx, choice) {
+      currentStep = 4;
+
+      addTyping();
+      setTimeout(() => {
+        removeTyping();
+
+        if (idx === 1) {
+          // Family input path
+          addMessage('ai', 'You mentioned families influenced this practice. Can you give a quick example? Even one sentence is fine — like "a parent suggested..." or "families told us they wanted..."');
+          showInput();
+          enableInput('e.g. "A parent mentioned their child was interested in cooking at home..."');
+        } else if (idx === 0) {
+          // Team discussion path
+          addMessage('ai', 'You mentioned a team discussion. Can you briefly describe what came out of that conversation that shaped this practice?');
+          showInput();
+          enableInput('e.g. "We noticed at our team meeting that..."');
+        } else {
+          // Skip freeform, go to mapping
+          currentStep = 5;
+          updateSteps(3, 3);
+          showMappingResult();
+        }
+      }, 1200);
+    }
+
+    function showMappingResult() {
+      addMessage('ai', `Based on what you've shared, here's how this practice connects to the National Quality Framework.
+
+<div class="result-card">
+  <div class="result-header" style="background: #f8fafc; color: var(--text-secondary);">Suggested NQF Mapping</div>
+  <div class="result-body">
+    <div class="result-row">
+      <div class="result-label">Best-fit Quality Area</div>
+      <div class="result-value"><span class="qa-tag qa1">QA1</span> Educational Program and Practice</div>
+    </div>
+    <div class="result-row">
+      <div class="result-label">Suggested Element</div>
+      <div class="result-value"><strong>Element 1.1.2</strong> — Child-directed learning<br><span style="color: var(--text-secondary); font-size: 0.9rem;">Each child's current knowledge, strengths, ideas, culture, abilities and interests are the foundation of the program.</span></div>
+    </div>
+    <div class="result-row">
+      <div class="result-label">Also consider</div>
+      <div class="result-value"><span class="qa-tag qa3">QA3</span> Element 3.2.1 — Inclusive environment &nbsp;&nbsp;<span class="qa-tag qa6">QA6</span> Element 6.1.2 — Parent views are respected</div>
+    </div>
+    <div class="result-row">
+      <div class="result-label">Rationale</div>
+      <div class="result-value" style="color: var(--text-secondary); font-size: 0.9rem;">The practice you described is grounded in children's observed interests and has been shaped by family input and team reflection. This positions it strongly within QA1 (program responsiveness) with supporting connections to inclusive environments and collaborative partnerships with families.</div>
+    </div>
+    <div class="result-row">
+      <div class="result-label">Suggested Key Practice Idea</div>
+      <div class="result-value" style="font-size: 0.9rem; font-style: italic; color: var(--text-secondary);">Our educational program is informed by ongoing observations of children's interests and abilities, with input from families actively shaping how we extend learning experiences across the service.</div>
+    </div>
+  </div>
+</div>
+
+<div class="action-row">
+  <button class="action-btn primary" onclick="handleUseNow()">Use this in Key Practice Writer →</button>
+  <button class="action-btn secondary" onclick="handleSave()">Save to library</button>
+</div>`);
+
+      updateSteps(4, 4);
+    }
+
+    function handleUseNow() {
+      addMessage('ai', `<div style="background: var(--green-light); border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem 1.25rem;">
+        <strong style="color: var(--green);">Heading to Key Practice Writer →</strong><br>
+        <span style="color: var(--text-secondary); font-size: 0.9rem;">Your practice description, selected element (1.1.2), and reflection context will be pre-filled. You'll refine and finalise your Key Practice there.</span>
+      </div>`);
+      hideInput();
+    }
+
+    function handleSave() {
+      addMessage('ai', `<div style="background: var(--green-light); border: 1px solid #bbf7d0; border-radius: 8px; padding: 1rem 1.25rem;">
+        <strong style="color: var(--green);">Saved to your Mapped Practice Ideas</strong><br>
+        <span style="color: var(--text-secondary); font-size: 0.9rem;">You can find this in your library any time. When you're ready to write the Key Practice, it'll be there waiting.</span>
+      </div>`);
+      hideInput();
+    }
+
+    // Focus input on load
+    inputEl.focus();
+  </script>
+</body>
+</html>

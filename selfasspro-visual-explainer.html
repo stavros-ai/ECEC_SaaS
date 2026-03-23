@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SelfAssessPro — Visual Explainer</title>
+  <style>
+    :root {
+      --bg-primary: #0f1117;
+      --bg-secondary: #1a1d27;
+      --bg-card: #222636;
+      --text-primary: #e8eaed;
+      --text-secondary: #9aa0b0;
+      --accent: #6c9fff;
+      --accent-secondary: #a78bfa;
+      --green: #4ade80;
+      --amber: #fbbf24;
+      --coral: #f87171;
+      --teal: #2dd4bf;
+      --border: #2d3348;
+      --radius: 6px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      padding: 2.5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ---- HEADER ---- */
+    header {
+      margin-bottom: 3rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 2rem;
+    }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.4rem;
+    }
+    header h1 span { color: var(--accent); }
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      max-width: 700px;
+    }
+
+    /* ---- SECTION HEADINGS ---- */
+    h2 {
+      font-size: 1.35rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin: 3rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    h2 .num {
+      background: var(--accent);
+      color: var(--bg-primary);
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    /* ---- PROBLEM SECTION ---- */
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .problem-box {
+      background: var(--bg-secondary);
+      border-left: 3px solid var(--coral);
+      padding: 1.25rem 1.5rem;
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .problem-box .label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--coral);
+      margin-bottom: 0.4rem;
+    }
+    .problem-box p {
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    /* ---- SOLUTION BANNER ---- */
+    .solution-banner {
+      background: linear-gradient(135deg, #1a2a4a 0%, #1a1d27 100%);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      margin: 2rem 0 1rem;
+      text-align: left;
+    }
+    .solution-banner p {
+      font-size: 1.05rem;
+      color: var(--text-primary);
+    }
+    .solution-banner strong { color: var(--accent); }
+
+    /* ---- THREE STUDIOS ---- */
+    .studios-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .studio-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      position: relative;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .studio-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .studio-card .icon {
+      font-size: 1.8rem;
+      margin-bottom: 0.75rem;
+      display: block;
+    }
+    .studio-card h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .studio-card p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+    }
+    .studio-card .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .studio-card:nth-child(1) { border-top: 3px solid var(--teal); }
+    .studio-card:nth-child(1) h3 { color: var(--teal); }
+    .studio-card:nth-child(1) .tag { background: rgba(45,212,191,0.15); color: var(--teal); }
+
+    .studio-card:nth-child(2) { border-top: 3px solid var(--accent); }
+    .studio-card:nth-child(2) h3 { color: var(--accent); }
+    .studio-card:nth-child(2) .tag { background: rgba(108,159,255,0.15); color: var(--accent); }
+
+    .studio-card:nth-child(3) { border-top: 3px solid var(--amber); }
+    .studio-card:nth-child(3) h3 { color: var(--amber); }
+    .studio-card:nth-child(3) .tag { background: rgba(251,191,36,0.15); color: var(--amber); }
+
+    /* ---- EXPANDED DETAIL PANELS ---- */
+    .detail-panel {
+      display: none;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem 2rem;
+      margin-top: -0.5rem;
+      margin-bottom: 1.5rem;
+      animation: fadeIn 0.25s ease;
+    }
+    .detail-panel.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .detail-panel h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--text-primary);
+    }
+    .detail-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .detail-col h5 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      margin-bottom: 0.5rem;
+    }
+    .detail-col p, .detail-col li {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+    .detail-col ul {
+      list-style: none;
+      padding: 0;
+    }
+    .detail-col li::before {
+      content: "→ ";
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .click-hint {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-top: 0.5rem;
+    }
+
+    /* ---- USER FLOW ---- */
+    .flow-container {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin: 1.5rem 0;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+    }
+    .flow-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      min-width: 160px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .flow-step .step-num {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.3rem;
+    }
+    .flow-step .step-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .flow-step .step-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+    .flow-arrow {
+      color: var(--accent);
+      font-size: 1.4rem;
+      flex-shrink: 0;
+      padding: 0 0.3rem;
+      opacity: 0.6;
+    }
+
+    /* ---- WHO USES IT ---- */
+    .users-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .user-box {
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      border: 1px solid var(--border);
+    }
+    .user-box h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+    .user-box p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .user-box:first-child h4 { color: var(--accent-secondary); }
+    .user-box:last-child h4 { color: var(--green); }
+
+    /* ---- BUSINESS MODEL ---- */
+    .biz-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .biz-item {
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      border: 1px solid var(--border);
+      text-align: left;
+    }
+    .biz-item .biz-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      margin-bottom: 0.35rem;
+    }
+    .biz-item .biz-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    .biz-item .biz-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      margin-top: 0.2rem;
+    }
+
+    /* ---- VISION SECTION ---- */
+    .vision-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1.5rem;
+      margin: 1.5rem 0;
+      align-items: start;
+    }
+    .vision-now {
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+    }
+    .vision-now h4 {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+    .vision-now p {
+      font-size: 0.9rem;
+      color: var(--text-primary);
+    }
+    .vision-later {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    .vision-chip {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.7rem 1rem;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    /* ---- FOOTER ---- */
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      body { padding: 1.25rem; }
+      header h1 { font-size: 1.6rem; }
+      .problem-grid, .studios-grid, .biz-row, .users-row, .detail-section { grid-template-columns: 1fr; }
+      .vision-grid { grid-template-columns: 1fr; }
+      .vision-later { grid-template-columns: 1fr 1fr; }
+      .flow-container { flex-wrap: wrap; gap: 0.5rem; }
+      .flow-arrow { display: none; }
+    }
+
+    /* screen reader only */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="sr-only">
+    SelfAssessPro is a web platform for Australian childcare centres that helps educators turn their everyday practices into government-required documentation. It has three main tools: an NQF Mapping Studio that links what you do to the official quality checklist, a Key Practice Writing Studio that writes polished paragraphs about your practice, and a Quality Improvement Planning Assistant that helps you set goals and action plans. Everything saves into a private library per centre.
+  </div>
+
+  <header>
+    <h1>Self<span>Assess</span>Pro</h1>
+    <p class="subtitle">A web platform that helps childcare centres turn what they actually do every day into the documentation the government requires — quickly, correctly, and without losing their minds.</p>
+  </header>
+
+  <!-- SECTION 1: THE PROBLEM -->
+  <h2><span class="num">1</span> The Problem</h2>
+  <p style="color: var(--text-secondary); font-size: 0.95rem; max-width: 780px; margin-bottom: 1rem;">
+    Every childcare centre in Australia has to prove they're meeting quality standards. They do this through <strong style="color: var(--text-primary);">Self-Assessment</strong> documents and a <strong style="color: var(--text-primary);">Quality Improvement Plan</strong>. Writing these is hard, slow, and frustrating.
+  </p>
+
+  <div class="problem-grid">
+    <div class="problem-box">
+      <div class="label">Time-poor</div>
+      <p>Educators are busy looking after children. Documentation gets pushed to nights, weekends, or just doesn't get done properly.</p>
+    </div>
+    <div class="problem-box">
+      <div class="label">Knowledge gap</div>
+      <p>Most educators can talk about what they do, but struggle to connect their practice to the specific elements of the official quality checklist (NQF).</p>
+    </div>
+    <div class="problem-box">
+      <div class="label">No tools exist</div>
+      <p>There is no software built for this. Centres use Word docs, spreadsheets, or expensive consultants. None of it scales.</p>
+    </div>
+    <div class="problem-box">
+      <div class="label">Documents gather dust</div>
+      <p>Self-assessments are supposed to be living documents, updated regularly. In practice, they're written once and forgotten until the next assessment visit.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 2: THE SOLUTION -->
+  <h2><span class="num">2</span> The Solution — Three Studios</h2>
+  <p class="click-hint">Click any studio card to see how it works.</p>
+
+  <div class="studios-grid">
+    <div class="studio-card" onclick="toggleDetail('mapping')">
+      <span class="icon">🧭</span>
+      <h3>NQF Mapping Studio</h3>
+      <p>Describe what you do. The AI figures out which part of the government checklist it matches.</p>
+      <span class="tag">Where does this fit?</span>
+    </div>
+    <div class="studio-card" onclick="toggleDetail('writing')">
+      <span class="icon">✏️</span>
+      <h3>Key Practice Writer</h3>
+      <p>Turn everyday practice into a polished, compliant paragraph — ready to submit.</p>
+      <span class="tag">Write it properly</span>
+    </div>
+    <div class="studio-card" onclick="toggleDetail('qip')">
+      <span class="icon">🎯</span>
+      <h3>QIP Assistant</h3>
+      <p>Describe an issue or improvement area. Get a structured goal, action steps, and success measures.</p>
+      <span class="tag">Plan the improvement</span>
+    </div>
+  </div>
+
+  <!-- Detail panels (hidden by default) -->
+  <div class="detail-panel" id="detail-mapping">
+    <div class="detail-section">
+      <div class="detail-col">
+        <h5>You provide</h5>
+        <p>A description of something your centre does. For example: "We have a bush tucker garden that children help maintain, and we use it to teach about Indigenous food systems."</p>
+      </div>
+      <div class="detail-col">
+        <h5>AI returns</h5>
+        <ul>
+          <li>Best-fit Quality Area(s) and Element(s)</li>
+          <li>A short rationale explaining why</li>
+          <li>A suggested Key Practice idea you can use straight away</li>
+        </ul>
+        <p style="margin-top: 0.75rem;">You can then save this mapping to your library or jump straight into the Key Practice Writer with the info pre-filled.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-panel" id="detail-writing">
+    <div class="detail-section">
+      <div class="detail-col">
+        <h5>You provide</h5>
+        <ul>
+          <li>The NQF Element (or let AI suggest one)</li>
+          <li>What your centre actually does (the embedded practice)</li>
+          <li>Optionally: how it was informed by reflection, families, or community</li>
+        </ul>
+      </div>
+      <div class="detail-col">
+        <h5>AI returns</h5>
+        <ul>
+          <li>One polished paragraph, max 480 characters</li>
+          <li>Written in first-person plural ("we")</li>
+          <li>Strictly based on what you provided — no fabrication</li>
+          <li>You can regenerate, edit, and refine before saving</li>
+        </ul>
+        <p style="margin-top: 0.75rem;">After saving, you can view "Assessment Readiness Prompts" — what an assessor might ask, want to see, or observe.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="detail-panel" id="detail-qip">
+    <div class="detail-section">
+      <div class="detail-col">
+        <h5>You provide</h5>
+        <ul>
+          <li>The issue or improvement area you've identified</li>
+          <li>Optionally: the relevant Quality Area, family/community input</li>
+        </ul>
+      </div>
+      <div class="detail-col">
+        <h5>AI returns</h5>
+        <ul>
+          <li>A clear goal statement</li>
+          <li>5–10 suggested next steps</li>
+          <li>A success measure, priority level, and timeframe</li>
+          <li>Progress notes field you can update over time</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: HOW IT FLOWS -->
+  <h2><span class="num">3</span> How a User Moves Through It</h2>
+
+  <div class="flow-container">
+    <div class="flow-step">
+      <div class="step-num">Step 1</div>
+      <div class="step-label">Describe practice</div>
+      <div class="step-desc">Type what you actually do</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">Step 2</div>
+      <div class="step-label">AI maps &amp; drafts</div>
+      <div class="step-desc">Links to NQF, writes it up</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">Step 3</div>
+      <div class="step-label">Review &amp; refine</div>
+      <div class="step-desc">Edit, regenerate, adjust</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">Step 4</div>
+      <div class="step-label">Confirm &amp; save</div>
+      <div class="step-desc">"This reflects real practice"</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="step-num">Step 5</div>
+      <div class="step-label">Library</div>
+      <div class="step-desc">Searchable, filterable, ready</div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: WHO USES IT -->
+  <h2><span class="num">4</span> Who Uses It</h2>
+
+  <div class="users-row">
+    <div class="user-box">
+      <h4>Centre / Service Account</h4>
+      <p>Multiple educators contribute under one service. Educators write Key Practices that sit in "pending" until the Director reviews and approves. Shared library, admin dashboard, unlimited users per subscription.</p>
+    </div>
+    <div class="user-box">
+      <h4>Individual Account</h4>
+      <p>A single educator or leader with their own private account. All data stays private. Monthly or annual billing. Good for consultants or individual professionals.</p>
+    </div>
+  </div>
+
+  <!-- SECTION 5: BUSINESS MODEL -->
+  <h2><span class="num">5</span> Business Model</h2>
+
+  <div class="biz-row">
+    <div class="biz-item">
+      <div class="biz-label">Pricing</div>
+      <div class="biz-value">Subscription</div>
+      <div class="biz-desc">Monthly or annual plans. Free trial with limited generations (e.g. 10/day).</div>
+    </div>
+    <div class="biz-item">
+      <div class="biz-label">Competition</div>
+      <div class="biz-value">None</div>
+      <div class="biz-desc">No dedicated software exists. Only expensive consultants (not scalable).</div>
+    </div>
+    <div class="biz-item">
+      <div class="biz-label">Market</div>
+      <div class="biz-value">All ECEC services</div>
+      <div class="biz-desc">Every childcare centre in Australia needs to do this. Thousands of potential customers.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 6: LONG-TERM VISION -->
+  <h2><span class="num">6</span> The Bigger Picture</h2>
+
+  <div class="vision-grid">
+    <div class="vision-now">
+      <h4>Launch with</h4>
+      <p>Self-Assessment and QIP documentation — the urgent, unmet need. Three studios, one library, one subscription.</p>
+    </div>
+    <div class="vision-later">
+      <div class="vision-chip">Rostering</div>
+      <div class="vision-chip">Risk assessments</div>
+      <div class="vision-chip">Programming &amp; documentation</div>
+      <div class="vision-chip">Policy writing</div>
+      <div class="vision-chip">Compliance audits</div>
+      <div class="vision-chip">Enrolments &amp; admin</div>
+    </div>
+  </div>
+  <p style="color: var(--text-secondary); font-size: 0.9rem; max-width: 700px; margin-top: 0.5rem;">
+    The entry point is documentation — the sharpest pain point. But the long-term vision is a full ECEC operations platform covering everything a centre needs to run.
+  </p>
+
+  <footer>
+    <p>SelfAssessPro — Visual Explainer &middot; March 2026</p>
+  </footer>
+
+  <script>
+    function toggleDetail(id) {
+      const panel = document.getElementById('detail-' + id);
+      const isActive = panel.classList.contains('active');
+
+      // Close all panels
+      document.querySelectorAll('.detail-panel').forEach(p => p.classList.remove('active'));
+
+      // Open clicked one (unless it was already open)
+      if (!isActive) {
+        panel.classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>
